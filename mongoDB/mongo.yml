@@ -40,3 +40,53 @@
         state: present
         allow_unauthenticated: yes
 
+
+    - name: Ensure replication section exists with replSetName
+      blockinfile:
+        path: /etc/mongod.conf
+        marker: "# {mark} ANSIBLE MANAGED BLOCK FOR REPLICATION"
+        block: |
+          replication:
+            replSetName: "rs0"
+      notify:
+        - restart mongod
+
+    - name: Ensure mongod service is enabled and running
+      service:
+        name: mongod
+        state: started
+        enabled: yes
+
+  handlers:
+    - name: restart mongod
+      service:
+        name: mongod
+        state: restarted
+
+- name: Initiate MongoDB Replica Set
+  hosts: mongo0
+  become: yes
+  tasks:
+    - name: Initiate replica set in MongoDB
+      shell: |
+        mongosh --host 54.91.55.104 --port 27017 --eval '
+          rs.initiate({
+            _id: "rs0",
+            members: [
+              { _id: 0, host: "54.91.55.104:27017" },
+              { _id: 1, host: "3.87.76.121:27017" },
+              { _id: 2, host: "3.80.68.159:27017" }
+            ]
+          });
+        '
+      register: rs_initiate_result
+
+
+    - name: Check replica set status
+      shell: |
+        mongosh --host 54.91.55.104 --port 27017 --eval 'JSON.stringify(rs.status())'
+      register: rs_status_result
+      ignore_errors: yes
+    - name: Display replica set status
+      debug:
+        var: rs_status_result.stdout
