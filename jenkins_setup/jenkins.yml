@@ -6,7 +6,6 @@
     - name: Update cache
       apt:
         update_cache: yes
-
     - name: install jdk
       apt:
         name: openjdk-17-jre
