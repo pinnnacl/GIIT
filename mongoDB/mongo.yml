@@ -1,0 +1,42 @@
+---
+- name: Install MongoDB 8.0 on Ubuntu 24.04
+  hosts: all
+  become: true
+  tasks:
+
+    - name: Ensure gnupg and curl are installed
+      apt:
+        name:
+          - gnupg
+          - curl
+        state: present
+    - name: Import MongoDB public GPG key
+      shell: |
+        curl -fsSL https://www.mongodb.org/static/pgp/server-8.0.asc -o /tmp/mongodb-server-8.0.asc
+        gpg --dearmor -o /usr/share/keyrings/mongodb-server-8.0.gpg /tmp/mongodb-server-8.0.asc
+      args:
+        creates: /usr/share/keyrings/mongodb-server-8.0.gpg
+
+
+    - name: Add MongoDB repository to sources list
+      copy:
+        content: |
+          deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-8.0.gpg ] https://repo.mongodb.org/apt/ubuntu noble/mongodb-org/8.0 multiverse
+        dest: /etc/apt/sources.list.d/mongodb-org-8.0.list
+
+    - name: Update apt package database
+      apt:
+        update_cache: yes
+
+    - name: Install MongoDB 8.0 components
+      apt:
+        name:
+          - mongodb-org=8.0.4
+          - mongodb-org-database=8.0.4
+          - mongodb-org-server=8.0.4
+          - mongodb-mongosh
+          - mongodb-org-mongos=8.0.4
+          - mongodb-org-tools=8.0.4
+        state: present
+        allow_unauthenticated: yes
+
