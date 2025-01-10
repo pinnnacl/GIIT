@@ -92,4 +92,7 @@ Then, check if the data appears in the secondary nodes by connecting to them and
 db.testcollection.find()
 
 
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+edit the /etc/mongo.cfg file to run in same network 0.0.0.0/0
 
+for cluster initializing - mention the IP instead of hostname in the playbook
